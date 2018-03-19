@@ -199,16 +199,17 @@ class ActiveRecord::Associations::CollectionAssociation
   end
 end
 
-class ActiveRecord::Base
-  class << self
-    def establish_connection_with_activerecord_import(*args)
-      conn = establish_connection_without_activerecord_import(*args)
+module ActiveRecord::Import
+  module ActiveRecordPatches
+    def self.apply!
+      ActiveRecord::Base.singleton_class.prepend ActiveRecordPatches
+    end
+
+    def establish_connection(*args)
+      conn = super(*args)
       ActiveRecord::Import.load_from_connection_pool connection_pool
       conn
     end
-
-    alias establish_connection_without_activerecord_import establish_connection
-    alias establish_connection establish_connection_with_activerecord_import
 
     # Returns true if the current database connection adapter
     # supports import functionality, otherwise returns false.
